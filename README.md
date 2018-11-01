@@ -22,10 +22,10 @@ SINR = receive_power/(interference+noise_power)
 这里的单位都是mW，所以把得到以dbm为单位的Receive_power和noise_power换成以mW为单位
 #maximum neighboring RSRP
 
-就是计算UE相邻小区中最邻近的小区发射到UE，UE接收的能量
+就是计算UE相邻小区中最邻近的小区发射到UE，UE接收的能量，但是发生故障时需要更新
 #maximum neighboring SINR
 
-我理解的计算这个就是计算UE相邻小区中最邻近的小区发射到UE，UE接收的能量，并且除以干扰和噪声功率
+计算这个就是计算UE相邻小区中最邻近的小区（发生故障时需要更新）发射到UE，UE接收的能量，并且除以干扰和噪声功率
 #干扰（interference）:
 
 ·每个cell内的UE受到相邻6个cell的干扰
