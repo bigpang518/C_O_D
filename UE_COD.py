@@ -53,8 +53,8 @@ def display(hot_endpoint, round_endpoint, roundfocus, third_layer_focus, points)
         # plt.annotate("%d" % p, xy=(points[p][0], points[p][1]), xytext=(points[p][0]-0.5, points[p][1]-0.5),
         #              arrowprops=dict(facecolor='black', shrink=0.1))
     plt.scatter(point_x, point_y, marker='+', color='b', s=10)
-    plt.xlim(-6, 6)
-    plt.ylim(-6, 6)
+    plt.xlim(-6*r, 6*r)
+    plt.ylim(-6*r, 6*r)
     plt.show()
 
 
@@ -96,11 +96,11 @@ def test_point_in_around(points, focuses):
         focuse_y = focuses[f][1]
         d1 = abs(s*x - y + focuse_y + s*r - s * focuse_x) / 2
         d2 = abs(-s*x - y + focuse_y + s*r + s * focuse_x) / 2
-        d3 = abs(y-focuse_y + s / 2)
+        d3 = abs(y-focuse_y + s*r / 2)
         d4 = abs(s*x - y + focuse_y - s*r - s*focuse_x) / 2
         d5 = abs(-s*x - y + focuse_y - s*r + s*focuse_x) / 2
-        d6 = abs(y-focuse_y - s / 2)
-        if d1==0 or d2==0 or d3==0 or d4==0 or d5==0 or d6==0:
+        d6 = abs(y-focuse_y - s*r / 2)
+        if d1 == 0 or d2 == 0 or d3 == 0 or d4 == 0 or d5 == 0 or d6 == 0:
             break
         else:
             if round(d1+d2+d3, 5) == round(d4+d5+d6, 5) == round(3*s*r/2, 5):
@@ -117,7 +117,7 @@ def accumulate(point, focuses, third_focuses):
     #  FSPL(db) = 10log10((4pidf/c)^2)
     #  frequency, lte - KT from south korea, d(km), f(MHz)
     f = 2600  # MHz
-     # focuses.extend(third_focuses)
+    # focuses.extend(third_focuses)
     focuses.insert(0, [0, 0])
     for i in range(len(point)):
         Interference = 0
@@ -138,9 +138,9 @@ def accumulate(point, focuses, third_focuses):
             mw = math.pow(10, m)  # 转换成mW
             Interference += mw
         rsrp = math.pow(10, receive_power / 10)  # 转换成mW
-        noise = math.pow(10, -3.765)  # 把noise转换成mW
+        noise = math.pow(10, -7.085)  # 把noise转换成mW
         sinr = rsrp / (Interference + noise)  #计算SINRs
-        SINR = 10 * math.log10(sinr / 1000)  # 转换成db
+        SINR = 10 * math.log10(sinr)  # 转换成db
         point[i].append(SINR)
         # 计算maximum neighboring RSRP 最近相邻小区收到的能量
         FSPL1 = 20 * math.log10(ds[1]) + 20 * math.log10(f) + 32.45
@@ -155,14 +155,14 @@ def accumulate(point, focuses, third_focuses):
         Interference1 += rsrp
         rsrp1 = math.pow(10, receive_power1 / 10)  # 从最近相邻小区收到的信号功率
         sinrn = rsrp1 / (Interference1 + noise)
-        SINRn = 10 * math.log10(sinrn / 1000)  # 转换成db
+        SINRn = 10 * math.log10(sinrn)  # 转换成db
         point[i].append(SINRn)
     print(len(point), "cols:", len(point[0]))
     return point
 
 
-# 手动调整参数
-def decrease_power(point,focuses,third_focuses):                 #下降能量之后下降基站能量调成6dbm
+# 手动调整参数，使正中心的正六边形为中断状态
+def decrease_power(point, focuses, third_focuses):                 #下降能量之后下降基站能量调成6dbm
     # Free-space path loss formula in decibels
     #  FSPL(db) = 10log10((4pidf/c)^2)
     #  frequency, lte - KT from south korea, d(km), f(MHz)
@@ -190,9 +190,9 @@ def decrease_power(point,focuses,third_focuses):                 #下降能量�
                 sum += mw
             Interference = sum
             rsrp = math.pow(10, receive_power / 10)  # 转换成mW
-            noise = math.pow(10, -3.765)  # 把noise转换成mW
+            noise = math.pow(10, -7.085)  # 把noise转换成mW
             sinr = rsrp / (Interference + noise)
-            SINR = 10 * math.log10(sinr / 1000)  # 转换成db
+            SINR = 10 * math.log10(sinr)  # 转换成db
             point[i].append(SINR)
             # 计算maximum neighboring RSRP 最近相邻小区收到的能量
             l = ds[1]
@@ -209,7 +209,7 @@ def decrease_power(point,focuses,third_focuses):                 #下降能量�
             Interference1 = sum1 + rsrp
             rsrp1 = math.pow(10, receive_power1 / 10)  # 从最近相邻小区收到的信号功率
             sinrn = rsrp1 / (Interference1 + noise)
-            SINRn = 10 * math.log10(sinrn / 1000)  # 转换成db
+            SINRn = 10 * math.log10(sinrn)  # 转换成db
             point[i].append(SINRn)
         else:
             receive_power = 46 - FSPL  # 正常的信号能量单位是dbm
@@ -225,9 +225,9 @@ def decrease_power(point,focuses,third_focuses):                 #下降能量�
                 sum += math.pow(10, power)
             Interference = sum + pow(10,(6 - FSPLC1)/10)  # 第二个数量为小区1的干扰
             rsrp = math.pow(10, receive_power / 10)  # 转换成mW
-            noise = math.pow(10, -3.765)  # 把noise转换成mW
+            noise = math.pow(10, -7.085)  # 把noise转换成mW
             sinr = rsrp / (Interference + noise)
-            SINR = 10 * math.log10(sinr / 1000)  # 转换成db
+            SINR = 10 * math.log10(sinr)  # 转换成db
             point[i].append(SINR)
             # 计算maximum neighboring RSRP 和 maximum neighboring SINR
             FSPL1 = 20 * math.log10(ds[1]) + 20 * math.log10(f) + 32.45
@@ -244,7 +244,7 @@ def decrease_power(point,focuses,third_focuses):                 #下降能量�
                 Interference1 = sum1 + rsrp_1 + rsrp
                 rsrp2 = math.pow(10, receive_power2 / 10)  # 从最近相邻小区收到的信号功率
                 sinrn = rsrp2 / (Interference1 + noise)
-                SINRn = 10 * math.log10(sinrn / 1000)  # 转换成db
+                SINRn = 10 * math.log10(sinrn)  # 转换成db
                 point[i].append(SINRn)
 
             else:
@@ -260,7 +260,7 @@ def decrease_power(point,focuses,third_focuses):                 #下降能量�
                 Interference1 = sum1 + rsrp
                 rsrp1 = math.pow(10, receive_power1 / 10)  # 从最近相邻小区收到的信号功率
                 sinrn = rsrp1 / (Interference1 + noise)
-                SINRn = 10 * math.log10(sinrn / 1000)  # 转换成db
+                SINRn = 10 * math.log10(sinrn)  # 转换成db
                 point[i].append(SINRn)
     return point
 
@@ -354,7 +354,7 @@ def get_point50(hot, endpoints):
 if __name__ == '__main__':
     # 中心六边形的中心点
     hot_spot = [0, 0]
-    r = 1  # 正六边形对角线的一半
+    r = 2  # 正六边形对角线的一半即边长
     s = math.sqrt(3)  # 根3,保留小数点后3位
     # 计算周边六边形中心点
     round_focuses, third_layer_focuses = get_round_focus(hot_spot, r)
